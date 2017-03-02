@@ -15,13 +15,24 @@ namespace UnitTests
     [TestClass]
     public class HomeControllerTest
     {
+        DbContextOptions<MyDbContext> options;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            options = new DbContextOptionsBuilder<MyDbContext>()
+              .UseInMemoryDatabase(databaseName: "MyTestDb")
+              .Options;
+
+            using (var context = new MyDbContext(options))
+            {
+                context.Database.EnsureDeleted();
+            }
+        }
+
         [TestMethod]
         public void MyTestMethod()
         {
-            var options = new DbContextOptionsBuilder<MyDbContext>()
-                .UseInMemoryDatabase(databaseName: "MyTestMethod")
-                .Options;
-
             // Run the test against one instance of the context
             using (var context = new MyDbContext(options))
             {
@@ -30,17 +41,12 @@ namespace UnitTests
                 var viewResult = indexResult.Should().BeOfType<ViewResult>();
                 var model = viewResult.Subject.Model.Should().BeOfType<HomeModel>();
                 model.Subject.Foo.Should().BeNull();
-
             }
         }
 
         [TestMethod]
         public void SaveAndReload()
         {
-            var options = new DbContextOptionsBuilder<MyDbContext>()
-                  .UseInMemoryDatabase(databaseName: "SaveAndReload")
-                  .Options;
-
             // Run the test against one instance of the context
             using (var context = new MyDbContext(options))
             {
